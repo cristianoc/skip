@@ -249,7 +249,7 @@ class SID(value: String) extends Key {
 
 base class KeySet uses Unsafe.Downcastable
 
-class TKeySet<+K: Orderable> private (inner: SortedSet<K>) extends KeySet {
+class TKeySet<K: Orderable> private (inner: SortedSet<K>) extends KeySet {
   static fun empty(): this {
     static(SortedSet[])
   }

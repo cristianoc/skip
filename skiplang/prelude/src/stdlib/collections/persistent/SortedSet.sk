@@ -8,7 +8,7 @@
 module SortedSet;
 
 // Use SortedMap for inner as iteration must be in order.
-class .SortedSet<+T: Orderable>(
+class .SortedSet<T: Orderable>(
   inner: SortedMap<T, void>,
 ) uses  // extends Sequence<T>
   IntoIterator<T>,
@@ -16,6 +16,7 @@ class .SortedSet<+T: Orderable>(
   Show[T: readonly Show],
   Hashable[T: Hashable],
   Equality,
+// Orderable,
 {
   fun isEmpty(): Bool {
     this.inner.isEmpty()
@@ -33,7 +34,7 @@ class .SortedSet<+T: Orderable>(
     SortedSet(this.inner.set(s, void))
   }
 
-  fun remove<U: Orderable>[T: U](s: U): SortedSet<U> {
+  fun remove(s: T): this {
     !this.inner=.remove(s);
     this
   }
@@ -64,6 +65,10 @@ class .SortedSet<+T: Orderable>(
 
   fun !=<U: Orderable>[T: U](other: readonly SortedSet<U>): Bool {
     this.inner != other.inner
+  }
+
+  fun compare(other: this): Order {
+    this.inner.compare(other.inner)
   }
 
   fun toString[T: readonly Show](): String {
@@ -98,16 +103,13 @@ class .SortedSet<+T: Orderable>(
     SortedSet(this.inner.merge(other.inner))
   }
 
-  fun intersection<U: Orderable>[T: U](other: SortedSet<U>): SortedSet<U> {
-    this.inner.keys().filter(k -> other.contains((k : U))) |>
+  fun intersection(other: this): this {
+    this.inner.keys().filter(k -> other.contains(k)) |>
       static::createFromIterator
   }
 
-  fun difference<U: Orderable>[T: U](other: SortedSet<U>): SortedSet<U> {
-    other.reduce(
-      (result, element) -> result.remove(element),
-      (this : SortedSet<U>),
-    )
+  fun difference(other: SortedSet<T>): SortedSet<T> {
+    other.reduce((result, element) -> result.remove(element), this)
   }
 
   fun size(): Int {

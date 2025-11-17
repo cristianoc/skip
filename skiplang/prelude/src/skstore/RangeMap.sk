@@ -25,7 +25,7 @@
 
 module RangeMap;
 
-base class .RangeMap<+K: Orderable, +V: Orderable> {
+base class .RangeMap<+K: Orderable, V: Orderable> {
   children =
   | Nil()
   | Node{
@@ -101,25 +101,21 @@ base class .RangeMap<+K: Orderable, +V: Orderable> {
       }
     }
 
-  fun add<K2: Orderable, V2: Orderable>[K: K2, V: V2](
-    key1: K2,
-    key2: K2,
-    value: V2,
-  ): RangeMap<K2, V2> {
+  fun add<K2: Orderable>[K: K2](key1: K2, key2: K2, value: V): RangeMap<K2, V> {
     this.addSet(key1, key2, Rope[value]);
   }
 
-  fun addSet<K2: Orderable, V2: Orderable>[K: K2, V: V2](
+  fun addSet<K2: Orderable>[K: K2](
     key1: K2,
     key2: K2,
-    values: Rope<V2>,
-  ): RangeMap<K2, V2>
+    values: Rope<V>,
+  ): RangeMap<K2, V>
   | Nil() -> static::node(key1, key2, values, Nil(), Nil())
   | Node _ ->
     invariant(key1 <= key2);
-    l: RangeMap<K2, V2> = this.left;
-    r: RangeMap<K2, V2> = this.right;
-    v: Rope<V2> = this.vset;
+    l: RangeMap<K2, V> = this.left;
+    r: RangeMap<K2, V> = this.right;
+    v: Rope<V> = this.vset;
     compare(key2, this.key1) match {
     | LT()
     | EQ() ->
@@ -298,7 +294,7 @@ base class .RangeMap<+K: Orderable, +V: Orderable> {
   }
 }
 
-class CompactRangeMap<+K: Orderable, +V: Orderable>(
+class CompactRangeMap<+K: Orderable, V: Orderable>(
   data: Array<((K, K), Array<V>)>,
 ) {
   fun values(): mutable Iterator<((K, K), Array<V>)> {
@@ -342,7 +338,7 @@ class CompactRangeMap<+K: Orderable, +V: Orderable>(
   }
 }
 
-class .RangeMapList<+K: Orderable, +V: Orderable> private (
+class .RangeMapList<+K: Orderable, V: Orderable> private (
   rmap: RangeMap<K, V>,
   rmaps: List<CompactRangeMap<K, V>>,
 ) {
@@ -350,20 +346,20 @@ class .RangeMapList<+K: Orderable, +V: Orderable> private (
     RangeMapList(RangeMap::createFromItems(items), List[])
   }
 
-  fun add<K2: Orderable, V2: Orderable>[K: K2, V: V2](
+  fun add<K2: Orderable>[K: K2](
     key1: K2,
     key2: K2,
-    value: V2,
-  ): RangeMapList<K2, V2> {
+    value: V,
+  ): RangeMapList<K2, V> {
     this.addSet(key1, key2, Rope[value]);
   }
 
-  fun addSet<K2: Orderable, V2: Orderable>[K: K2, V: V2](
+  fun addSet<K2: Orderable>[K: K2](
     key1: K2,
     key2: K2,
-    vset: Rope<V2>,
-  ): RangeMapList<K2, V2> {
-    nthis: RangeMapList<K2, V2> = this;
+    vset: Rope<V>,
+  ): RangeMapList<K2, V> {
+    nthis: RangeMapList<K2, V> = this;
     !nthis.rmap = nthis.rmap.addSet(key1, key2, vset);
     if (key1 != key2 && nthis.rmap.height() >= 10) {
       !nthis = RangeMapList(
